@@ -6,3 +6,5 @@ data/park.db
 data/park.db-journal
 coverage/
 .env
+data/park.db-shm
+data/park.db-wal
