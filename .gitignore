@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+*.log
+.vscode/
+data/park.db
+data/park.db-journal
+coverage/
+.env

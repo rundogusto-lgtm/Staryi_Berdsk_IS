@@ -1,0 +1,22 @@
+{
+  "name": "stary-berdsk",
+  "version": "0.4.0",
+  "description": "Веб-система управления арендой объектов парка отдыха «Старый Бердск»",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node src/db.js --seed",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.1",
+    "supertest": "^7.0.0"
+  }
+}
