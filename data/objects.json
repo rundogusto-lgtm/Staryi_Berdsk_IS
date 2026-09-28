@@ -1,0 +1,12 @@
+{
+  "objects": [
+    { "id": 1, "type": "gazebo", "name": "Беседка №1", "capacity": 6, "pricePerHour": 500, "parkingCapacity": 2, "x": 120, "y": 180 },
+    { "id": 2, "type": "gazebo", "name": "Беседка №2", "capacity": 8, "pricePerHour": 700, "parkingCapacity": 3, "x": 260, "y": 180 },
+    { "id": 3, "type": "gazebo", "name": "Беседка №3", "capacity": 10, "pricePerHour": 900, "parkingCapacity": 4, "x": 400, "y": 180 },
+    { "id": 4, "type": "tent",   "name": "Палатка A",  "capacity": 4, "pricePerHour": 300, "parkingCapacity": 1, "x": 120, "y": 320 },
+    { "id": 5, "type": "tent",   "name": "Палатка B",  "capacity": 4, "pricePerHour": 300, "parkingCapacity": 1, "x": 260, "y": 320 },
+    { "id": 6, "type": "parking","name": "Парковка №1","capacity": 1, "pricePerHour": 100, "parkingCapacity": 1, "x": 120, "y": 460 },
+    { "id": 7, "type": "parking","name": "Парковка №2","capacity": 1, "pricePerHour": 100, "parkingCapacity": 1, "x": 260, "y": 460 },
+    { "id": 8, "type": "parking","name": "Парковка №3","capacity": 1, "pricePerHour": 100, "parkingCapacity": 1, "x": 400, "y": 460 }
+  ]
+}
