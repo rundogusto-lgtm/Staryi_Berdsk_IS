@@ -1,10 +1,4 @@
-node_modules/
-.DS_Store
-*.log
-.vscode/
-data/park.db
-data/park.db-journal
-coverage/
-.env
-data/park.db-shm
-data/park.db-wal
+tests/test.db
+tests/test.db-journal
+tests/test.db-shm
+tests/test.db-wal

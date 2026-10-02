@@ -1,0 +1,11 @@
+# .gitattributes — единые окончания строк в репозитории.
+# Нормализация нужна, чтобы .editorconfig (end_of_line = lf) и Git не конфликтовали
+# на Windows: текст хранится с LF, переводы CRLF допускаются только у .bat.
+* text=auto eol=lf
+
+*.bat text eol=crlf
+*.png binary
+*.jpg binary
+*.ico binary
+*.pdf binary
+*.db binary
