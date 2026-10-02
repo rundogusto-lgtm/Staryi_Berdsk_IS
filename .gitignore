@@ -1,4 +1,23 @@
+# Зависимости
+node_modules/
+
+# Служебная база SQLite и её журналы
+data/park.db
+data/park.db-journal
+data/park.db-shm
+data/park.db-wal
+
+# Тестовая база
 tests/test.db
 tests/test.db-journal
 tests/test.db-shm
 tests/test.db-wal
+
+# Служебное
+.DS_Store
+Thumbs.db
+*.log
+coverage/
+.env
+.vscode/
+.idea/
