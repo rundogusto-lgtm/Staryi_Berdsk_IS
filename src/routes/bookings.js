@@ -1,29 +1,83 @@
-// src/routes/bookings.js — REST для броней
-const express = require('express');
-const {
+// src/routes/bookings.js — REST для броней.
+import { Router } from 'express';
+import {
   createBooking,
-  listBookings,
+  getBookings,
   setStatus,
-} = require('../services/bookingService');
+  cancelBooking,
+  getPriceQuote,
+  getDashboardSummary,
+} from '../services/bookingService.js';
+import { asyncHandler } from '../middleware/asyncHandler.js';
 
-const router = express.Router();
+const router = Router();
 
-router.post('/', (req, res) => {
-  const result = createBooking(req.body);
-  if (!result.ok) return res.status(400).json({ error: result.error });
-  res.status(201).json(result.booking);
-});
+/**
+ * POST /api/bookings — создаёт бронь в статусе pending.
+ * Тело: { objectId, date, hours, guests, cars }
+ * @returns {object} созданная бронь
+ */
+router.post(
+  '/',
+  asyncHandler((req, res) => {
+    res.status(201).json(createBooking(req.body).booking);
+  }),
+);
 
-router.get('/', (req, res) => {
-  const { status, date } = req.query;
-  res.json({ bookings: listBookings({ status, date }) });
-});
+/**
+ * POST /api/bookings/quote — считает цену без создания брони.
+ * Тело: { objectId, hours, date }
+ * @returns {{totalPrice: number, seasonCoefficient: number}}
+ */
+router.post(
+  '/quote',
+  asyncHandler((req, res) => {
+    const { objectId, hours, date } = req.body;
+    res.json(getPriceQuote(objectId, hours, date));
+  }),
+);
 
-router.patch('/:id/status', (req, res) => {
-  const { status } = req.body;
-  const result = setStatus(Number(req.params.id), status);
-  if (!result.ok) return res.status(400).json({ error: result.error });
-  res.json(result.booking);
-});
+/**
+ * GET /api/bookings/summary — срез статистики для дашборда директора.
+ * @returns {{total: number, byStatus: object, revenue: number}}
+ */
+router.get('/summary', asyncHandler((req, res) => {
+  res.json(getDashboardSummary());
+}));
 
-module.exports = router;
+/**
+ * GET /api/bookings — список броней. Фильтры: status, date, objectId.
+ * @returns {object[]} брони
+ */
+router.get(
+  '/',
+  asyncHandler((req, res) => {
+    const { status, date, objectId } = req.query;
+    res.json({ bookings: getBookings({ status, date, objectId }) });
+  }),
+);
+
+/**
+ * PATCH /api/bookings/:id/status — меняет статус брони.
+ * Тело: { status }
+ * @returns {object} обновлённая бронь
+ */
+router.patch(
+  '/:id/status',
+  asyncHandler((req, res) => {
+    res.json(setStatus(Number(req.params.id), req.body.status).booking);
+  }),
+);
+
+/**
+ * DELETE /api/bookings/:id — отменяет бронь.
+ * @returns {object} отменённая бронь
+ */
+router.delete(
+  '/:id',
+  asyncHandler((req, res) => {
+    res.json(cancelBooking(Number(req.params.id)).booking);
+  }),
+);
+
+export default router;
