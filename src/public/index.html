@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Старый Бердск — аренда объектов парка</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__brand">
+      <img src="/logo.svg" alt="Логотип парка" class="topbar__logo">
+      <div>
+        <strong>Старый Бердск</strong>
+        <small>Аренда беседок, палаток и парковок</small>
+      </div>
+    </div>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab" data-screen="map" type="button">Карта</button>
+      <button class="tab" data-screen="admin" type="button">Администратор</button>
+      <button class="tab" data-screen="director" type="button">Директор</button>
+    </nav>
+
+    <div class="topbar__right">
+      <span class="user-badge" id="userBadge" hidden></span>
+      <button class="btn btn--ghost" id="logoutBtn" type="button" hidden>Выйти</button>
+    </div>
+  </header>
+
+  <main id="app">
+    <section class="screen" data-screen="map">
+      <div class="filters">
+        <label>
+          Тип объекта
+          <select id="filterType">
+            <option value="">Все типы</option>
+            <option value="gazebo">Беседки</option>
+            <option value="tent">Палатки</option>
+            <option value="parking">Парковки</option>
+          </select>
+        </label>
+        <label>
+          Дата
+          <input type="date" id="filterDate">
+        </label>
+        <button class="btn btn--ghost" id="refreshBtn" type="button">Обновить</button>
+        <span class="legend">
+          <i class="legend__dot legend__dot--free"></i> свободно
+          <i class="legend__dot legend__dot--busy"></i> занято
+        </span>
+      </div>
+
+      <div class="map-layout">
+        <svg id="parkMap" class="park-map" viewBox="0 0 520 560" role="img"
+             aria-label="Схема парка отдыха «Старый Бердск»"></svg>
+
+        <aside class="panel" id="objectPanel" hidden>
+          <div class="panel__head">
+            <h2 id="panelTitle">Объект</h2>
+            <button class="btn btn--icon" id="panelClose" type="button" aria-label="Закрыть">×</button>
+          </div>
+          <dl class="panel__list" id="panelInfo"></dl>
+
+          <form id="bookingForm" class="form" novalidate>
+            <input type="hidden" id="bookingObjectId">
+
+            <label>
+              Дата брони
+              <input type="date" id="bookingDate" required>
+            </label>
+
+            <label>
+              Часы
+              <input type="number" id="bookingHours" min="1" max="12" step="1" value="4" required>
+            </label>
+
+            <label>
+              Гости
+              <input type="number" id="bookingGuests" min="1" step="1" value="2" required>
+            </label>
+
+            <label>
+              Машины
+              <input type="number" id="bookingCars" min="0" step="1" value="0" required>
+            </label>
+
+            <p class="form__quote" id="priceQuote">Укажите дату и часы</p>
+
+            <div class="form__actions">
+              <button class="btn btn--primary" type="submit" id="bookingSubmit">Забронировать</button>
+            </div>
+          </form>
+        </aside>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="admin" hidden>
+      <div class="screen__head">
+        <h1>Панель администратора</h1>
+        <div class="toolbar">
+          <select id="adminFilterStatus">
+            <option value="">Все статусы</option>
+            <option value="pending">Ожидает оплаты</option>
+            <option value="paid">Оплачено</option>
+            <option value="active">Активна</option>
+            <option value="completed">Завершена</option>
+            <option value="cancelled">Отменена</option>
+          </select>
+          <input type="date" id="adminFilterDate">
+          <input type="search" id="adminSearch" placeholder="Поиск по названию объекта">
+        </div>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Объект</th><th>Дата</th><th>Часы</th>
+            <th>Гости</th><th>Сумма</th><th>Статус</th><th>Действия</th>
+          </tr>
+        </thead>
+        <tbody id="adminTableBody"></tbody>
+      </table>
+    </section>
+
+    <section class="screen" data-screen="director" hidden>
+      <div class="screen__head">
+        <h1>Дашборд директора</h1>
+      </div>
+
+      <div class="kpi" id="kpi"></div>
+
+      <div class="director-grid">
+        <div>
+          <h2>Последние операции</h2>
+          <table class="table">
+            <thead>
+              <tr><th>ID</th><th>Объект</th><th>Дата</th><th>Сумма</th><th>Статус</th></tr>
+            </thead>
+            <tbody id="directorTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="receipt">
+          <h2>Чек</h2>
+          <div id="receiptBody" class="receipt__body">
+            <p class="muted">Выберите оплаченную бронь, чтобы сформировать чек.</p>
+          </div>
+          <div class="form__actions">
+            <button class="btn btn--ghost" id="receiptPrint" type="button" disabled>Печать чека</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
