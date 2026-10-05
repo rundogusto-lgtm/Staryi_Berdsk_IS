@@ -296,12 +296,23 @@ label {
   fill: var(--red);
 }
 
+.map-decor__label {
+  font-size: 11px;
+  fill: #6b8fa3;
+  text-anchor: middle;
+  pointer-events: none;
+  font-style: italic;
+}
+
 .map-object__label {
   font-size: 11px;
-  fill: #fff;
+  fill: var(--text);
   text-anchor: middle;
   pointer-events: none;
   font-weight: 600;
+  paint-order: stroke;
+  stroke: #eaf3ec;
+  stroke-width: 3px;
 }
 
 /* ---------- Панель объекта ---------- */
