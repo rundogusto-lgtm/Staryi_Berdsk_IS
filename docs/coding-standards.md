@@ -6,7 +6,9 @@
 - Константы: UPPER_SNAKE_CASE — `MAX_BOOKING_HOURS`, `BOOKING_STATUS`.
 - Функции: camelCase — `calcPrice`, `isSlotAvailable`, `createBooking`.
 - Классы: PascalCase — `ValidationError`, `ConflictError`.
-- Файлы и каталоги: kebab-case — `bookingService.js`, `async-handler.js`.
+- Файлы и каталоги: camelCase для JS-модулей — `bookingService.js`, `asyncHandler.js`
+  (исторически сложившееся соглашение проекта; переименовывать файлы нельзя —
+  это разорвёт историю git и ~20 импортов). Новые файлы продолжают то же соглашение.
 - Таблицы и колонки SQLite: snake_case — `objects`, `total_price`.
 - Имена должны отражать назначение. Запрещены `a`, `b`, `tmp`, `data` без уточнения.
 

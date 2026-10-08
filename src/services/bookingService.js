@@ -368,9 +368,15 @@ function getPriceQuote(objectId, hours, date) {
   }
 
   const hoursNumber = Number(hours);
+  const hoursInRange =
+    Number.isInteger(hoursNumber) &&
+    hoursNumber >= MIN_BOOKING_HOURS &&
+    hoursNumber <= MAX_BOOKING_HOURS;
 
-  if (!Number.isInteger(hoursNumber) || hoursNumber < MIN_BOOKING_HOURS || hoursNumber > MAX_BOOKING_HOURS) {
-    throw new ValidationError(`Количество часов должно быть от ${MIN_BOOKING_HOURS} до ${MAX_BOOKING_HOURS}`);
+  if (!hoursInRange) {
+    throw new ValidationError(
+      `Количество часов должно быть от ${MIN_BOOKING_HOURS} до ${MAX_BOOKING_HOURS}`,
+    );
   }
 
   return {

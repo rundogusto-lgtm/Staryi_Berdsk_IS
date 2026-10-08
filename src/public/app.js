@@ -7,6 +7,7 @@ import * as booking from './booking.js';
 import * as admin from './admin.js';
 import * as director from './director.js';
 import { showToast, todayIso } from './ui.js';
+import { MIN_BOOKING_HOURS, MAX_BOOKING_HOURS } from './api.js';
 
 const SCREENS = ['map', 'admin', 'director'];
 
@@ -71,8 +72,11 @@ function validateBookingForm() {
     return 'Выберите дату брони.';
   }
 
-  if (!Number.isInteger(hours) || hours < 1 || hours > 12) {
-    return 'Количество часов должно быть целым числом от 1 до 12.';
+  const hoursInRange =
+    Number.isInteger(hours) && hours >= MIN_BOOKING_HOURS && hours <= MAX_BOOKING_HOURS;
+
+  if (!hoursInRange) {
+    return `Количество часов: целое число от ${MIN_BOOKING_HOURS} до ${MAX_BOOKING_HOURS}.`;
   }
 
   if (!Number.isInteger(guests) || guests < 1) {

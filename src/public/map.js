@@ -47,7 +47,6 @@ function svgEl(tagName, attrs) {
 /**
  * Рисует фигуру объекта по его типу.
  * @param {object} object — объект парка
- * @param {boolean} busy — слот занят
  * @returns {SVGElement}
  */
 function buildShape(object) {

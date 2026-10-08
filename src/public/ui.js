@@ -1,5 +1,11 @@
 // src/public/ui.js — слой представления: уведомления, форматирование, мелкие DOM-хелперы.
 
+/** Время жизни всплывающего уведомления в мс. */
+const TOAST_TIMEOUT_MS = 4500;
+
+/** Ширина заглушки «нет данных» по умолчанию — под самую широкую таблицу. */
+const DEFAULT_EMPTY_COL_SPAN = 8;
+
 /** Подписи статусов брони для всех экранов. */
 const STATUS_LABELS = {
   pending: 'Ожидает оплаты',
@@ -22,7 +28,7 @@ const TYPE_LABELS = {
  * @param {number} [timeout] — время жизни в мс
  * @returns {void}
  */
-function showToast(message, timeout = 4500) {
+function showToast(message, timeout = TOAST_TIMEOUT_MS) {
   const stack = document.getElementById('toastStack');
 
   if (!stack) {
@@ -104,14 +110,15 @@ function createEl(tagName, className, textContent) {
  * @param {HTMLElement} tbody — тело таблицы
  * @param {HTMLElement[]} rows — готовые строки
  * @param {string} [emptyText]
+ * @param {number} [colCount] — ширина заглушки в колонках
  * @returns {void}
  */
-function fillTable(tbody, rows, emptyText = 'Нет данных') {
+function fillTable(tbody, rows, emptyText = 'Нет данных', colCount = DEFAULT_EMPTY_COL_SPAN) {
   tbody.replaceChildren();
 
   if (rows.length === 0) {
     const cell = createEl('td', 'empty', emptyText);
-    cell.colSpan = 8;
+    cell.colSpan = colCount;
     tbody.appendChild(cell);
     return;
   }
@@ -121,4 +128,14 @@ function fillTable(tbody, rows, emptyText = 'Нет данных') {
   }
 }
 
-export { STATUS_LABELS, TYPE_LABELS, showToast, formatMoney, formatDate, todayIso, createEl, fillTable };
+export {
+  STATUS_LABELS,
+  TYPE_LABELS,
+  TOAST_TIMEOUT_MS,
+  showToast,
+  formatMoney,
+  formatDate,
+  todayIso,
+  createEl,
+  fillTable,
+};

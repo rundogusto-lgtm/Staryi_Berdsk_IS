@@ -1,11 +1,11 @@
 // src/public/booking.js — карточка объекта, форма бронирования и расчёт цены.
 // Модуль не ходит в API сам: всё общение делегировано api.js.
 
-import { createBooking, fetchPriceQuote } from './api.js';
+import { createBooking, fetchPriceQuote, MIN_BOOKING_HOURS, MAX_BOOKING_HOURS } from './api.js';
 import { showToast, formatMoney, todayIso } from './ui.js';
 
-const MAX_HOURS = 12;
-const MIN_HOURS = 1;
+const MIN_HOURS = MIN_BOOKING_HOURS;
+const MAX_HOURS = MAX_BOOKING_HOURS;
 
 const dom = {};
 let currentObject = null;
@@ -30,8 +30,10 @@ function renderPanel(parkObject) {
   dom.panel.hidden = false;
   dom.panelTitle.textContent = parkObject.name;
 
+  const typeLabel =
+    parkObject.type === 'gazebo' ? 'Беседка' : parkObject.type === 'tent' ? 'Палатка' : 'Парковка';
   const info = [
-    ['Тип', parkObject.type === 'gazebo' ? 'Беседка' : parkObject.type === 'tent' ? 'Палатка' : 'Парковка'],
+    ['Тип', typeLabel],
     ['Вместимость', `${parkObject.capacity} чел.`],
     ['Мест для машин', parkObject.parkingCapacity],
     ['Цена за час', formatMoney(parkObject.pricePerHour)],
