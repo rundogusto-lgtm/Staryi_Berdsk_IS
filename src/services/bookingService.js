@@ -147,7 +147,7 @@ function validateBookingInput(input) {
   }
 
   if (guests > object.capacity) {
-    return 'Превышена вместимость'; // main: короткий текст для тоста (день 13)
+    return 'Превышена вместимость';
   }
 
   if (!Number.isInteger(cars) || cars < 0) {
