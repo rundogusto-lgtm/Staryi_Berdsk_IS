@@ -125,6 +125,8 @@ function renderReceipt(bookingId) {
 
 /**
  * Открывает диалог печати и печатает только блок чека.
+ * Формат А4: CSS `@page { size: A4; margin: 12mm }` задаёт размер листа,
+ * `data-print-hidden` скрывает всё, кроме чека (см. styles.css, день 13).
  * @returns {void}
  */
 function handlePrint() {

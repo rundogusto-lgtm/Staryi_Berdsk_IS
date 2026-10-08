@@ -630,6 +630,11 @@ label {
    остальные блоки атрибутом data-print-hidden перед вызовом window.print(). */
 
 @media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
   [data-print-hidden] {
     display: none !important;
   }
