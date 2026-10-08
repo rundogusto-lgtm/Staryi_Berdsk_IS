@@ -147,7 +147,7 @@ function validateBookingInput(input) {
   }
 
   if (guests > object.capacity) {
-    return 'Превышена вместимость';
+    return 'Превышена вместимость объекта'; // bugfix: уточнён текст ошибки (день 13)
   }
 
   if (!Number.isInteger(cars) || cars < 0) {
