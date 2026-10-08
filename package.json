@@ -1,6 +1,6 @@
 {
   "name": "stary-berdsk",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "description": "Веб-система управления арендой объектов парка отдыха «Старый Бердск»",
   "main": "src/server.js",
   "type": "module",
