@@ -1,6 +1,6 @@
 // src/public/director.js — дашборд директора: KPI, последние операции, печать чека.
 
-import { fetchBookings, fetchSummary } from './api.js';
+import { fetchBookings, fetchSummary, fetchObjectsById, objectName } from './api.js';
 import { STATUS_LABELS, showToast, formatMoney, formatDate, createEl, fillTable } from './ui.js';
 
 const dom = {};
@@ -13,23 +13,7 @@ let receiptBookingId = null;
  * @returns {Promise<void>}
  */
 async function loadObjects() {
-  try {
-    const response = await fetch('/api/objects');
-    const { objects } = await response.json();
-    objectsById = new Map(objects.map((object) => [object.id, object]));
-  } catch {
-    objectsById = new Map();
-  }
-}
-
-/**
- * Возвращает название объекта по его ID.
- * @param {number} objectId
- * @returns {string}
- */
-function objectName(objectId) {
-  const object = objectsById.get(objectId);
-  return object ? object.name : `Объект #${objectId}`;
+  objectsById = await fetchObjectsById();
 }
 
 /**
@@ -65,7 +49,7 @@ function renderTable() {
     const row = document.createElement('tr');
     const cells = [
       String(booking.id),
-      objectName(booking.object_id),
+      objectName(objectsById, booking.object_id),
       formatDate(booking.date),
       formatMoney(booking.total_price),
     ];
@@ -116,7 +100,7 @@ function renderReceipt(bookingId) {
 
   const lines = [
     ['Бронь', `#${booking.id}`],
-    ['Объект', objectName(booking.object_id)],
+    ['Объект', objectName(objectsById, booking.object_id)],
     ['Дата', formatDate(booking.date)],
     ['Часы', `${booking.hours} ч`],
     ['Гостей', String(booking.guests)],

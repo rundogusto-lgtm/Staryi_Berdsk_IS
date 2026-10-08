@@ -3,6 +3,10 @@
 
 const API_BASE = '/api';
 
+/** Границы бронирования: синхронизированы с серверными MIN/MAX_BOOKING_HOURS. */
+const MIN_BOOKING_HOURS = 1;
+const MAX_BOOKING_HOURS = 12;
+
 /**
  * Выполняет запрос и возвращает распарсенный JSON.
  * @param {string} path — путь относительно /api
@@ -139,9 +143,39 @@ async function fetchSummary() {
   return request('/bookings/summary');
 }
 
+/**
+ * Загружает справочник объектов как Map id -> объект.
+ * При недоступности сервера возвращает пустой Map, чтобы таблицы
+ * строились по ID вместо падения (graceful degradation).
+ * @returns {Promise<Map<number, object>>}
+ */
+async function fetchObjectsById() {
+  try {
+    const objects = await fetchObjects();
+    return new Map(objects.map((object) => [object.id, object]));
+  } catch {
+    return new Map();
+  }
+}
+
+/**
+ * Возвращает название объекта по его ID.
+ * @param {Map<number, object>} objectsById — справочник из fetchObjectsById
+ * @param {number} objectId
+ * @returns {string}
+ */
+function objectName(objectsById, objectId) {
+  const object = objectsById.get(objectId);
+  return object ? object.name : `Объект #${objectId}`;
+}
+
 export {
+  MIN_BOOKING_HOURS,
+  MAX_BOOKING_HOURS,
   request,
   fetchObjects,
+  fetchObjectsById,
+  objectName,
   fetchBookings,
   createBooking,
   setBookingStatus,

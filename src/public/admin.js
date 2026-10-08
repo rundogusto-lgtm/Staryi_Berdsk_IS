@@ -1,7 +1,20 @@
 // src/public/admin.js — панель администратора: список броней, смена статусов, отмена.
 
-import { fetchBookings, setBookingStatus, cancelBooking } from './api.js';
-import { STATUS_LABELS, showToast, formatMoney, formatDate, createEl, fillTable } from './ui.js';
+import {
+  fetchBookings,
+  setBookingStatus,
+  cancelBooking,
+  fetchObjectsById,
+  objectName,
+} from './api.js';
+import {
+  STATUS_LABELS,
+  showToast,
+  formatMoney,
+  formatDate,
+  createEl,
+  fillTable,
+} from './ui.js';
 
 /**
  * Действия, доступные в зависимости от текущего статуса.
@@ -34,23 +47,7 @@ const handlers = {
  * @returns {Promise<void>}
  */
 async function loadObjects() {
-  try {
-    const response = await fetch('/api/objects');
-    const { objects } = await response.json();
-    objectsById = new Map(objects.map((object) => [object.id, object]));
-  } catch {
-    objectsById = new Map();
-  }
-}
-
-/**
- * Возвращает название объекта по его ID.
- * @param {number} objectId
- * @returns {string}
- */
-function objectName(objectId) {
-  const object = objectsById.get(objectId);
-  return object ? object.name : `Объект #${objectId}`;
+  objectsById = await fetchObjectsById();
 }
 
 /**
@@ -82,7 +79,11 @@ async function changeStatus(id, next) {
 async function handleCancel(id) {
   try {
     const booking = await cancelBooking(id);
-    showToast({ title: 'Бронь отменена', text: `Бронь #${booking.id} освободила слот.`, kind: 'success' });
+    showToast({
+      title: 'Бронь отменена',
+      text: `Бронь #${booking.id} освободила слот.`,
+      kind: 'success',
+    });
     await reload();
     handlers.onChanged();
   } catch (error) {
@@ -129,7 +130,7 @@ function buildRow(booking) {
 
   const cells = [
     String(booking.id),
-    objectName(booking.object_id),
+    objectName(objectsById, booking.object_id),
     formatDate(booking.date),
     `${booking.hours} ч`,
     String(booking.guests),
@@ -141,7 +142,9 @@ function buildRow(booking) {
   }
 
   const statusCell = createEl('td');
-  statusCell.appendChild(createEl('span', `badge badge--${booking.status}`, STATUS_LABELS[booking.status]));
+  statusCell.appendChild(
+    createEl('span', `badge badge--${booking.status}`, STATUS_LABELS[booking.status]),
+  );
   row.appendChild(statusCell);
   row.appendChild(buildActions(booking));
 
@@ -155,7 +158,9 @@ function buildRow(booking) {
 function render() {
   const query = dom.search.value.trim().toLowerCase();
   const visible = query
-    ? bookings.filter((booking) => objectName(booking.object_id).toLowerCase().includes(query))
+    ? bookings.filter((booking) =>
+        objectName(objectsById, booking.object_id).toLowerCase().includes(query),
+      )
     : bookings;
 
   fillTable(dom.tbody, visible.map(buildRow), 'Броней нет');
