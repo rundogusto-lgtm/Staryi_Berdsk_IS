@@ -1,5 +1,6 @@
 // src/services/objectService.js — выборка объектов парка и их занятость.
 import { db } from '../db.js';
+import { BOOKING_STATUS } from './bookingStatus.js';
 
 /**
  * Приводит строку таблицы objects к формату, который отдаёт наружу API.
@@ -54,10 +55,10 @@ function getOccupancyForDate(date) {
   const rows = db
     .prepare(
       `SELECT object_id, COUNT(*) AS cnt FROM bookings
-       WHERE date = ? AND status != 'cancelled'
+       WHERE date = ? AND status != ?
        GROUP BY object_id`,
     )
-    .all(date);
+    .all(date, BOOKING_STATUS.CANCELLED);
 
   const occupancy = new Map();
 

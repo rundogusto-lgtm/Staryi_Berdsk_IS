@@ -1,15 +1,10 @@
 // src/services/bookingService.js — бизнес-логика бронирования и расчёта цены.
 import { db } from '../db.js';
 import { getObjectById } from './objectService.js';
+import { BOOKING_STATUS } from './bookingStatus.js';
 import { ValidationError, ConflictError, NotFoundError } from '../exceptions.js';
 
-const BOOKING_STATUS = {
-  PENDING: 'pending',
-  PAID: 'paid',
-  ACTIVE: 'active',
-  COMPLETED: 'completed',
-  CANCELLED: 'cancelled',
-};
+export { BOOKING_STATUS };
 
 const MAX_BOOKING_HOURS = 12;
 const MIN_BOOKING_HOURS = 1;
@@ -385,7 +380,6 @@ function getPriceQuote(objectId, hours, date) {
 }
 
 export {
-  BOOKING_STATUS,
   MAX_BOOKING_HOURS,
   MIN_BOOKING_HOURS,
   MAX_DAYS_AHEAD,
