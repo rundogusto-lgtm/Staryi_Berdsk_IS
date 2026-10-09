@@ -7,11 +7,15 @@ data/park.db-journal
 data/park.db-shm
 data/park.db-wal
 
-# Тестовая база
+# Тестовые базы
 tests/test.db
 tests/test.db-journal
 tests/test.db-shm
 tests/test.db-wal
+tests/api.test.db
+tests/api.test.db-journal
+tests/api.test.db-shm
+tests/api.test.db-wal
 
 # Служебное
 .DS_Store
