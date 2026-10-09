@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Логотип парка">
-  <circle cx="32" cy="32" r="30" fill="#ffffff" opacity="0.18"/>
-  <path d="M12 44 L32 16 L52 44 Z" fill="#ffffff"/>
-  <rect x="26" y="34" width="12" height="12" fill="#2e8b57"/>
-  <rect x="24" y="42" width="16" height="3" rx="1.5" fill="#2e8b57"/>
+  <rect width="64" height="64" fill="#243b2e"/>
+  <rect x="8" y="8" width="48" height="48" fill="none" stroke="#ffffff" stroke-width="3"/>
+  <path d="M16 42 L32 22 L48 42 Z" fill="#ffffff"/>
+  <rect x="28" y="36" width="8" height="8" fill="#243b2e"/>
 </svg>
