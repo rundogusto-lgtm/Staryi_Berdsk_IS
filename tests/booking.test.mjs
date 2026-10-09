@@ -174,6 +174,26 @@ describe('validateBookingInput', () => {
   it('отклоняет отрицательное число машин', () => {
     expect(validateBookingInput({ ...base(), cars: -1 })).toBe('Некорректное число машин');
   });
+
+  it('требует objectId и не путает отсутствие поля с несуществующим объектом', () => {
+    // Отсутствие поля — ошибка ввода (400), а не «объект не найден» (404).
+    expect(validateBookingInput({ ...base(), objectId: undefined })).toBe('Не указан objectId');
+    expect(validateBookingInput({ ...base(), objectId: null })).toBe('Не указан objectId');
+    expect(validateBookingInput({ ...base(), objectId: '' })).toBe('Не указан objectId');
+  });
+
+  it('отклоняет нечисловой objectId', () => {
+    expect(validateBookingInput({ ...base(), objectId: 'abc' }))
+      .toBe('objectId должен быть целым числом');
+  });
+
+  it('принимает objectId строкой и приводит его к числу', () => {
+    const result = createBooking({ ...base(), objectId: '2' });
+
+    expect(result.ok).toBe(true);
+    expect(result.booking.object_id).toBe(2);
+    expect(typeof result.booking.object_id).toBe('number');
+  });
 });
 
 describe('createBooking', () => {
