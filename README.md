@@ -11,13 +11,14 @@
 - Панель администратора: статусы, фильтры, отмена и восстановление.
 - Дашборд директора: KPI, выручка, последние операции, печать чека А4.
 - 15 исключительных ситуаций с типизированными ошибками (400/404/409).
-- 40 unit-тестов, покрытие сервисного слоя ~93%.
+- 89 автотестов (Vitest + Supertest), покрытие серверной части 98,5 %.
 
 ## Стек технологий
 - Node.js + Express (REST API).
 - SQLite (better-sqlite3), без ORM — подготовленные выражения.
 - Фронтенд без сборки: ES-модули, SVG.
-- Тесты: Vitest (+ `@vitest/coverage-v8`).
+- Тесты: Vitest, Supertest, `@vitest/coverage-v8`.
+- CI: GitHub Actions (`.github/workflows/test.yml`).
 
 ## Быстрый старт
 ```bash
@@ -47,14 +48,20 @@ npm run test:coverage
 - DELETE /api/bookings/:id — отмена брони
 
 ## Документация
+- [Дневник практики](docs/diary.md)
 - [Руководство пользователя](docs/user-guide.md)
 - [Руководство по установке](docs/install-guide.md)
 - [Changelog](CHANGELOG.md)
+- [Диаграммы](docs/diagrams/README.md) — Use Case, классов, ER, Activity, State, Sequence
 - [Стандарты кодирования](docs/coding-standards.md)
+- [Тестовые сценарии и тест-кейсы](docs/test-scenarios.md) / [тест-кейсы](docs/test-cases.md)
+- [Протоколы тестирования](docs/test-protocols.md) / [баг-репорты](docs/bug-reports.md) / [сводка](docs/test-summary.md)
+- [Покрытие тестами](docs/test-coverage.md)
+- [Отчёт об отладке](docs/debug-report.md) / [об исключениях](docs/exceptions.md)
 - [Чек-лист инспекции](docs/inspection-checklist.md) / [Отчёт об инспекции](docs/inspection-report.md)
 - [Метрики качества](docs/quality-metrics.md)
 - [Стратегия ветвления](docs/git-strategy.md)
-- [Исключительные ситуации](docs/exceptions.md)
+- [Презентация: структура](docs/presentation-outline.md) / [текст выступления](docs/presentation-speech.md)
 
 ## Авторы
 - Мариненко Е. Е.
