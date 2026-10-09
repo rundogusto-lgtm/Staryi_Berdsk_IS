@@ -21,6 +21,9 @@
 - CI: GitHub Actions (`.github/workflows/test.yml`).
 
 ## Быстрый старт
+
+Требуется Node.js 22 или новее и Git.
+
 ```bash
 git clone https://github.com/rundogusto-lgtm/Staryi_Berdsk_IS.git
 cd Staryi_Berdsk_IS
@@ -31,10 +34,20 @@ npm start
 
 Сервер: http://localhost:3000
 
-## Тесты
+Если порт 3000 занят другим приложением, запустите на свободном:
+
 ```bash
-npm test
-npm run test:coverage
+$env:PORT=3100; npm start    # PowerShell (Windows)
+PORT=3100 npm start          # Bash
+```
+
+Подробная инструкция и решение проблем — [docs/install-guide.md](docs/install-guide.md).
+
+## Тесты
+
+```bash
+npm test                # 89 тестов
+npm run test:coverage   # отчёт о покрытии в coverage/index.html
 ```
 
 ## API
