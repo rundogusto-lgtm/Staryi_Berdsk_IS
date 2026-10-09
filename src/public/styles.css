@@ -279,9 +279,6 @@ label {
 .map-object__shape {
   stroke: #fff;
   stroke-width: 2;
-}
-
-.map-object__shape {
   fill: #4a7a5c;
 }
 
@@ -289,19 +286,26 @@ label {
   fill: var(--danger);
 }
 
-.map-object--parking .map-object__shape {
+.map-object--free.map-object--parking .map-object__shape {
   fill: #5b7a8c;
 }
 
-.map-object--busy.map-object--parking .map-object__shape {
-  fill: var(--danger);
+.map-decor__label {
+  font-size: 11px;
+  fill: var(--muted);
+  text-anchor: middle;
+  pointer-events: none;
+  font-style: italic;
 }
 
 .map-object__label {
   font-size: 11px;
-  fill: #fff;
+  fill: var(--ink);
   text-anchor: middle;
   pointer-events: none;
+  paint-order: stroke;
+  stroke: #e4e9e4;
+  stroke-width: 3px;
 }
 
 /* ---------- Панель объекта ---------- */

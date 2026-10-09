@@ -10,7 +10,7 @@ const SCENE = [
   { tag: 'rect', attrs: { x: 20, y: 20, width: 480, height: 520, rx: 16 }, className: 'map-zone' },
   { tag: 'path', attrs: { d: 'M 20 260 Q 260 220 500 270' }, className: 'map-path' },
   { tag: 'path', attrs: { d: 'M 60 100 Q 180 140 300 120' }, className: 'map-water' },
-  { tag: 'text', attrs: { x: 70, y: 96, class: 'map-object__label' }, text: 'река' },
+  { tag: 'text', attrs: { x: 70, y: 96 }, className: 'map-decor__label', text: 'река' },
 ];
 
 /** Состояние модуля: текущая дата, объекты и выбранный объект. */
@@ -90,11 +90,13 @@ function render() {
 
   for (const object of state.objects) {
     const busy = object.busy === true;
-    const classes = ['map-object', `map-object--${object.type}`];
-
-    if (busy) {
-      classes.push('map-object--busy');
-    }
+    // Класс занятости обязателен в обе стороны: без map-object--free
+    // правило заливки свободного слота не сработает и фигура останется чёрной.
+    const classes = [
+      'map-object',
+      `map-object--${object.type}`,
+      busy ? 'map-object--busy' : 'map-object--free',
+    ];
 
     const group = svgEl('g', {
       class: classes.join(' '),
@@ -108,7 +110,9 @@ function render() {
     shape.setAttribute('class', 'map-object__shape');
     group.appendChild(shape);
 
-    const label = svgEl('text', { x: object.position.x, y: object.position.y + 4 });
+    // Подпись выносится под фигуру: внутри треугольника палатки и узкого
+    // прямоугольника парковки текст не помещался и обрезался.
+    const label = svgEl('text', { x: object.position.x, y: object.position.y + 32 });
     label.setAttribute('class', 'map-object__label');
     label.textContent = TYPE_LABELS[object.type];
     group.appendChild(label);
