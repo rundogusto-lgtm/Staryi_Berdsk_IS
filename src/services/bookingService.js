@@ -122,7 +122,18 @@ function calcPrice(objectId, hours, date) {
  */
 function validateBookingInput(input) {
   const { objectId, date, hours, guests, cars } = input || {};
-  const object = getObjectById(objectId);
+
+  // Обязательные поля проверяются до обращения к БД: без objectId
+  // запрос — это ошибка ввода (400), а не «объект не найден» (404).
+  if (objectId === undefined || objectId === null || objectId === '') {
+    return 'Не указан objectId';
+  }
+
+  if (!Number.isInteger(Number(objectId))) {
+    return 'objectId должен быть целым числом';
+  }
+
+  const object = getObjectById(Number(objectId));
 
   if (!object) {
     return 'Объект не найден';
@@ -201,7 +212,10 @@ function assertBookingInput(input) {
 function createBooking(input) {
   assertBookingInput(input);
 
-  const { objectId, date, hours, guests, cars } = input;
+  // objectId приходит из JSON и может прийти строкой — приводим к числу,
+  // иначе SQLite сохранил бы '2' текстом вместо 2.
+  const objectId = Number(input.objectId);
+  const { date, hours, guests, cars } = input;
   const totalPrice = calcPrice(objectId, hours, date);
 
   const insert = db.prepare(
