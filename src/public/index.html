@@ -7,95 +7,216 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
 </head>
-<body>
+<body data-role="guest">
+  <a class="skip-link" href="#app">Перейти к содержимому</a>
+
+  <div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+    <div class="gate__card">
+      <img src="/logo.svg" alt="Логотип парка" class="gate__logo">
+      <h1 id="gateTitle">Старый Бердск</h1>
+      <p class="muted">Выберите, как войти в систему</p>
+      <div class="gate__roles">
+        <button class="gate__btn" type="button" data-role-btn="guest">
+          <strong>Гость</strong>
+          <span>Карта и бронирование — без пароля</span>
+        </button>
+        <button class="gate__btn" type="button" data-role-btn="admin">
+          <strong>Администратор</strong>
+          <span>Статусы и брони — пароль 1234</span>
+        </button>
+        <button class="gate__btn" type="button" data-role-btn="director">
+          <strong>Директор</strong>
+          <span>KPI и выручка — пароль 1234</span>
+        </button>
+      </div>
+      <div class="gate__pass" id="gatePass" hidden>
+        <label class="field">
+          <span class="field__label">Пароль для роли: <b id="gatePassRole">персонал</b></span>
+          <input type="password" id="gatePassInput" inputmode="numeric" autocomplete="off" placeholder="Введите 1234">
+        </label>
+        <p class="field-error" id="gatePassError" aria-live="polite"></p>
+        <div class="gate__pass-actions">
+          <button class="btn btn--ghost" type="button" id="gatePassBack">Назад</button>
+          <button class="btn btn--primary" type="button" id="gatePassSubmit">Войти</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <header class="topbar">
     <div class="topbar__brand">
       <img src="/logo.svg" alt="Логотип парка" class="topbar__logo">
       <div>
         <strong>Старый Бердск</strong>
-        <small>Аренда беседок, палаток и парковок</small>
+        <small>Аренда объектов парка</small>
       </div>
     </div>
 
-    <nav class="tabs" id="tabs">
+    <nav class="tabs" id="tabs" aria-label="Разделы системы">
       <button class="tab" data-screen="map" type="button">Карта</button>
-      <button class="tab" data-screen="admin" type="button">Администратор</button>
-      <button class="tab" data-screen="director" type="button">Директор</button>
+      <button class="tab" data-screen="admin" type="button" data-role-tab="admin">Администратор</button>
+      <button class="tab" data-screen="director" type="button" data-role-tab="director">Директор</button>
     </nav>
+
+    <div class="topbar__role">
+      <span class="role-badge" id="roleBadge">Гость</span>
+      <button class="btn btn--ghost" id="roleExit" type="button">Сменить роль</button>
+    </div>
   </header>
 
   <main id="app">
-    <section class="screen" data-screen="map">
-      <div class="filters">
-        <label>
-          Тип объекта
-          <select id="filterType">
-            <option value="">Все типы</option>
-            <option value="gazebo">Беседки</option>
-            <option value="tent">Палатки</option>
-            <option value="parking">Парковки</option>
-          </select>
-        </label>
-        <label>
-          Дата
+    <section class="screen" data-screen="map" aria-labelledby="mapTitle">
+      <div class="hero">
+        <img class="hero__photo" src="/images/hero.jpg" alt="Домики парка на берегу воды">
+        <div class="hero__body">
+          <p class="hero__eyebrow">Парк отдыха на природе</p>
+          <h1 id="mapTitle">Старый Бердск</h1>
+          <p class="hero__text">Беседки, палатки и парковки. Выберите дату, найдите свободный объект и оформите бронь за три шага.</p>
+          <div class="hero__meta">
+            <span class="num" id="mapCount" aria-live="polite"></span>
+            <span class="hero__season">Лето ×1,2 · Зима ×0,8</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="filters" role="group" aria-label="Фильтры карты">
+        <label class="field">
+          <span class="field__label">Дата</span>
           <input type="date" id="filterDate">
         </label>
+
+        <div class="field">
+          <span class="field__label" id="typeLabel">Тип объекта</span>
+          <div class="segmented" id="typeSegmented" role="group" aria-labelledby="typeLabel">
+            <button type="button" class="segmented__btn segmented__btn--active" data-type="" aria-pressed="true">Все</button>
+            <button type="button" class="segmented__btn" data-type="gazebo" aria-pressed="false">Беседки</button>
+            <button type="button" class="segmented__btn" data-type="tent" aria-pressed="false">Палатки</button>
+            <button type="button" class="segmented__btn" data-type="parking" aria-pressed="false">Парковки</button>
+          </div>
+        </div>
+
+        <label class="switch">
+          <input type="checkbox" id="freeOnlyToggle">
+          <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+          <span class="switch__text">Только свободные</span>
+        </label>
+
         <button class="btn btn--ghost" id="refreshBtn" type="button">Обновить</button>
-        <span class="legend">
+
+        <span class="legend" aria-label="Обозначения карты">
           <i class="legend__dot legend__dot--free"></i> свободно
           <i class="legend__dot legend__dot--busy"></i> занято
         </span>
       </div>
 
       <div class="map-layout">
-        <svg id="parkMap" class="park-map" viewBox="0 0 520 560" role="img"
-             aria-label="Схема парка отдыха «Старый Бердск»"></svg>
+        <div class="map-wrap">
+          <svg id="parkMap" class="park-map" viewBox="0 0 520 560" role="img"
+               aria-label="Схема парка отдыха «Старый Бердск»"></svg>
 
-        <aside class="panel" id="objectPanel" hidden>
+          <div class="catalog">
+            <div class="catalog__head">
+              <h2>Объекты парка</h2>
+              <p class="muted">Нажмите на объект в списке или на карте</p>
+            </div>
+            <ul class="catalog__list" id="catalogList"></ul>
+          </div>
+
+          <figure class="photo-strip">
+            <img src="/images/shore.jpg" alt="Берег парка: качели и пирс на воде">
+            <figcaption>Тихий берег для отдыха — бронь за три шага</figcaption>
+          </figure>
+        </div>
+
+        <div class="map-side">
+          <div class="day-summary" id="daySummary" aria-live="polite">
+            <h2>Сводка дня</h2>
+            <p class="day-summary__date" id="daySummaryDate"></p>
+            <p class="day-summary__free num"><span id="daySummaryFree">—</span> <small>свободно</small></p>
+            <div class="occupancy" role="img" aria-label="Загрузка объектов">
+              <div class="occupancy__fill" id="occupancyFill" style="width: 0%"></div>
+            </div>
+            <ol class="day-summary__steps">
+              <li><span class="day-summary__num">1</span><b>Выберите дату</b> и тип объекта</li>
+              <li><span class="day-summary__num">2</span>Нажмите на <b>свободный объект</b></li>
+              <li><span class="day-summary__num">3</span>Укажите часы и <b>забронируйте</b></li>
+            </ol>
+          </div>
+
+          <aside class="panel" id="objectPanel" hidden aria-labelledby="panelTitle">
           <div class="panel__head">
-            <h2 id="panelTitle">Объект</h2>
-            <button class="btn btn--icon" id="panelClose" type="button" aria-label="Закрыть">×</button>
+            <div>
+              <h2 id="panelTitle">Объект</h2>
+              <p class="panel__sub" id="panelSub"></p>
+            </div>
+            <button class="btn btn--icon" id="panelClose" type="button" aria-label="Закрыть панель">×</button>
           </div>
           <dl class="panel__list" id="panelInfo"></dl>
 
-          <form id="bookingForm" class="form" novalidate>
+          <form id="bookingForm" class="form" novalidate aria-label="Форма бронирования">
             <input type="hidden" id="bookingObjectId">
 
-            <label>
-              Дата брони
+            <div class="field">
+              <label for="bookingDate">Дата брони</label>
               <input type="date" id="bookingDate" required>
-            </label>
+              <p class="field-error" id="bookingDateError" aria-live="polite"></p>
+            </div>
 
-            <label>
-              Часы
-              <input type="number" id="bookingHours" min="1" max="12" step="1" value="4" required>
-            </label>
+            <div class="field">
+              <label for="bookingHours">Часы · <span class="num" id="bookingHoursValue">4</span></label>
+              <div class="stepper">
+                <button class="btn btn--ghost stepper__btn" type="button" id="hoursMinus" aria-label="Уменьшить часы">−</button>
+                <input type="range" id="bookingHours" min="1" max="12" step="1" value="4" required aria-describedby="bookingHoursError">
+                <button class="btn btn--ghost stepper__btn" type="button" id="hoursPlus" aria-label="Увеличить часы">+</button>
+              </div>
+              <p class="field-error" id="bookingHoursError" aria-live="polite"></p>
+            </div>
 
-            <label>
-              Гости
-              <input type="number" id="bookingGuests" min="1" step="1" value="2" required>
-            </label>
+            <div class="form__row">
+              <div class="field">
+                <label for="bookingGuests">Гости</label>
+                <div class="stepper">
+                  <button class="btn btn--ghost stepper__btn" type="button" id="guestsMinus" aria-label="Меньше гостей">−</button>
+                  <input type="number" id="bookingGuests" class="num" min="1" step="1" value="2" required aria-describedby="bookingGuestsError">
+                  <button class="btn btn--ghost stepper__btn" type="button" id="guestsPlus" aria-label="Больше гостей">+</button>
+                </div>
+                <p class="field-error" id="bookingGuestsError" aria-live="polite"></p>
+              </div>
 
-            <label>
-              Машины
-              <input type="number" id="bookingCars" min="0" step="1" value="0" required>
-            </label>
+              <div class="field">
+                <label for="bookingCars">Машины</label>
+                <div class="stepper">
+                  <button class="btn btn--ghost stepper__btn" type="button" id="carsMinus" aria-label="Меньше машин">−</button>
+                  <input type="number" id="bookingCars" class="num" min="0" step="1" value="0" required aria-describedby="bookingCarsError">
+                  <button class="btn btn--ghost stepper__btn" type="button" id="carsPlus" aria-label="Больше машин">+</button>
+                </div>
+                <p class="field-error" id="bookingCarsError" aria-live="polite"></p>
+              </div>
+            </div>
 
-            <p class="form__quote" id="priceQuote">Укажите дату и часы</p>
+            <div class="price-box" aria-live="polite">
+              <p class="price-box__line" id="priceBase">Укажите дату и часы</p>
+              <p class="price-box__total num" id="priceQuote">—</p>
+              <p class="field-error" id="bookingFormError"></p>
+            </div>
 
             <div class="form__actions">
               <button class="btn btn--primary" type="submit" id="bookingSubmit">Забронировать</button>
             </div>
           </form>
-        </aside>
+          </aside>
+        </div>
       </div>
     </section>
 
-    <section class="screen" data-screen="admin" hidden>
+    <section class="screen" data-screen="admin" hidden aria-labelledby="adminTitle">
       <div class="screen__head">
-        <h1>Панель администратора</h1>
-        <div class="toolbar">
-          <select id="adminFilterStatus">
+        <div>
+          <h1 id="adminTitle">Бронирования</h1>
+          <p class="screen__sub">Статусы, фильтры и отмена. Подтверждение — прямо в строке.</p>
+        </div>
+        <div class="toolbar" role="group" aria-label="Фильтры бронирований">
+          <select id="adminFilterStatus" aria-label="Фильтр по статусу">
             <option value="">Все статусы</option>
             <option value="pending">Ожидает оплаты</option>
             <option value="paid">Оплачено</option>
@@ -103,38 +224,47 @@
             <option value="completed">Завершена</option>
             <option value="cancelled">Отменена</option>
           </select>
-          <input type="date" id="adminFilterDate">
-          <input type="search" id="adminSearch" placeholder="Поиск по названию объекта">
+          <input type="date" id="adminFilterDate" aria-label="Фильтр по дате">
+          <select id="adminFilterObject" aria-label="Фильтр по объекту">
+            <option value="">Все объекты</option>
+          </select>
+          <input type="search" id="adminSearch" placeholder="Поиск по № брони" aria-label="Поиск по номеру брони" inputmode="numeric">
         </div>
       </div>
 
       <table class="table">
         <thead>
           <tr>
-            <th>ID</th><th>Объект</th><th>Дата</th><th>Часы</th>
-            <th>Гости</th><th>Сумма</th><th>Статус</th><th>Действия</th>
+            <th scope="col">№</th><th scope="col">Объект</th><th scope="col">Дата</th><th scope="col">Часы</th>
+            <th scope="col">Гости</th><th scope="col">Сумма</th><th scope="col">Статус</th><th scope="col">Действия</th>
           </tr>
         </thead>
         <tbody id="adminTableBody"></tbody>
       </table>
     </section>
 
-    <section class="screen" data-screen="director" hidden>
+    <section class="screen" data-screen="director" hidden aria-labelledby="directorTitle">
       <div class="screen__head">
-        <h1>Дашборд директора</h1>
+        <div>
+          <h1 id="directorTitle">Дашборд директора</h1>
+          <p class="screen__sub">Выручка, загрузка и последние операции.</p>
+        </div>
       </div>
 
       <div class="kpi" id="kpi"></div>
 
       <div class="director-grid">
-        <div>
-          <h2>Последние операции</h2>
-          <table class="table">
-            <thead>
-              <tr><th>ID</th><th>Объект</th><th>Дата</th><th>Сумма</th><th>Статус</th></tr>
-            </thead>
-            <tbody id="directorTableBody"></tbody>
-          </table>
+        <div class="director-main">
+          <div class="chart-card">
+            <div class="chart-card__head">
+              <h2>Выручка за 14 дней</h2>
+              <p class="muted">По оплаченным броням</p>
+            </div>
+            <svg id="revenueChart" class="chart" viewBox="0 0 560 190" role="img" aria-label="График выручки"></svg>
+          </div>
+
+          <h2 class="section-title">Последние операции</h2>
+          <ul class="ops-list" id="directorRecentList"></ul>
         </div>
 
         <div class="receipt">
@@ -143,7 +273,7 @@
             <p class="muted">Выберите оплаченную бронь, чтобы сформировать чек.</p>
           </div>
           <div class="form__actions">
-            <button class="btn btn--ghost" id="receiptPrint" type="button" disabled>Печать чека</button>
+            <button class="btn btn--ghost" id="receiptPrint" type="button" disabled>Печать чека А4</button>
           </div>
         </div>
       </div>

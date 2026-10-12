@@ -1,7 +1,17 @@
-// src/public/director.js — дашборд директора: KPI, последние операции, печать чека.
+// src/public/director.js — дашборд директора: KPI, график выручки, операции, чек.
+import { fetchBookings, fetchSummary, fetchObjects, fetchObjectsById, objectName } from './api.js';
+import { STATUS_LABELS, showToast, formatMoney, formatDate, createEl, todayIso } from './ui.js';
 
-import { fetchBookings, fetchSummary, fetchObjectsById, objectName } from './api.js';
-import { STATUS_LABELS, showToast, formatMoney, formatDate, createEl, fillTable } from './ui.js';
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** Глубина графика выручки в днях. */
+const CHART_DAYS = 14;
+
+/** Максимальное число операций в компактном списке. */
+const RECENT_LIMIT = 8;
+
+/** Задержка staggered reveal элементов списка. */
+const STAGGER_MS = 30;
 
 const dom = {};
 let bookings = [];
@@ -17,70 +27,191 @@ async function loadObjects() {
 }
 
 /**
- * Рисует карточки KPI.
+ * Создаёт SVG-элемент.
+ * @param {string} tag
+ * @param {object} attrs
+ * @returns {SVGElement}
+ */
+function svgEl(tag, attrs) {
+  const element = document.createElementNS(SVG_NS, tag);
+
+  for (const [key, value] of Object.entries(attrs)) {
+    element.setAttribute(key, String(value));
+  }
+
+  return element;
+}
+
+/**
+ * Возвращает дату YYYY-MM-DD, сдвинутую на offset дней от сегодня.
+ * @param {number} offset
+ * @returns {string}
+ */
+function dayOffsetIso(offset) {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() + offset);
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${mm}-${dd}`;
+}
+
+/**
+ * Рисует KPI-карточки: выручка, брони, средний чек, загрузка объектов.
+ * Средний чек — выручка / число оплаченных; загрузка — доля занятых сегодня.
  * @param {{total: number, byStatus: object, revenue: number}} summary
+ * @param {number} occupancy — доля занятых объектов сегодня (0..1)
  * @returns {void}
  */
-function renderKpi(summary) {
+function renderKpi(summary, occupancy) {
+  const paidCount = summary.byStatus.paid || 0;
+  const average = paidCount > 0 ? Math.round(summary.revenue / paidCount) : 0;
+
   const cards = [
-    { label: 'Всего броней', value: summary.total },
-    { label: 'Ожидают оплаты', value: summary.byStatus.pending },
-    { label: 'Оплачено', value: summary.byStatus.paid },
-    { label: 'Активные', value: summary.byStatus.active },
-    { label: 'Выручка', value: formatMoney(summary.revenue) },
+    { label: 'Выручка', value: formatMoney(summary.revenue), accent: true },
+    { label: 'Брони', value: String(summary.total), accent: false },
+    { label: 'Средний чек', value: formatMoney(average), accent: false },
+    { label: 'Загрузка сегодня', value: `${Math.round(occupancy * 100)}%`, accent: false },
   ];
 
   dom.kpi.replaceChildren();
 
   for (const card of cards) {
-    const box = createEl('div', 'kpi__card');
+    const box = createEl('div', card.accent ? 'kpi__card kpi__card--accent' : 'kpi__card');
     box.appendChild(createEl('span', '', card.label));
-    box.appendChild(createEl('strong', '', String(card.value)));
+    box.appendChild(createEl('strong', '', card.value));
     dom.kpi.appendChild(box);
   }
 }
 
 /**
- * Рисует таблицу последних операций.
+ * Рисует столбчатый SVG-график выручки за последние CHART_DAYS дней.
+ * Учитываются оплаченные брони; пустые дни — нулевые столбцы.
+ * @param {object[]} paidBookings — брони в статусе paid
  * @returns {void}
  */
-function renderTable() {
-  const rows = bookings.slice(0, 10).map((booking) => {
-    const row = document.createElement('tr');
-    const cells = [
-      String(booking.id),
-      objectName(objectsById, booking.object_id),
-      formatDate(booking.date),
-      formatMoney(booking.total_price),
-    ];
+function renderChart(paidBookings) {
+  const chart = dom.chart;
+  chart.replaceChildren();
 
-    for (const value of cells) {
-      row.appendChild(createEl('td', '', value));
+  const days = [];
+  const sums = new Map();
+
+  for (let i = CHART_DAYS - 1; i >= 0; i--) {
+    const iso = dayOffsetIso(-i);
+    days.push(iso);
+    sums.set(iso, 0);
+  }
+
+  for (const booking of paidBookings) {
+    if (sums.has(booking.date)) {
+      sums.set(booking.date, sums.get(booking.date) + booking.total_price);
     }
+  }
 
-    const statusCell = createEl('td');
+  const values = days.map((day) => sums.get(day));
+  const max = Math.max(...values, 1);
+  const width = 560;
+  const baseY = 158;
+  const plotH = 128;
+  const slot = (width - 16) / CHART_DAYS;
+  const barW = Math.min(26, slot - 10);
 
-    const button = createEl(
-      'button',
-      'btn btn--ghost',
-      STATUS_LABELS[booking.status],
-    );
+  // Горизонтальная сетка.
+  for (const fraction of [0.33, 0.66, 1]) {
+    const y = baseY - plotH * fraction;
+    chart.appendChild(svgEl('line', {
+      x1: 8, y1: y, x2: width - 8, y2: y, class: 'chart__grid',
+    }));
+  }
 
-    button.type = 'button';
-    button.disabled = booking.status !== 'paid';
-    button.title = booking.status === 'paid'
-      ? 'Сформировать чек'
-      : 'Чек доступен только для оплаченных броней';
+  days.forEach((day, index) => {
+    const value = values[index];
+    const height = Math.max(value > 0 ? 3 : 0, (value / max) * plotH);
+    const x = 8 + slot * index + (slot - barW) / 2;
 
-    button.addEventListener('click', () => renderReceipt(booking.id));
+    const bar = svgEl('rect', {
+      x: x.toFixed(1),
+      y: (baseY - height).toFixed(1),
+      width: barW,
+      height: height.toFixed(1),
+      rx: 3,
+      class: 'chart__bar',
+    });
 
-    statusCell.appendChild(button);
-    row.appendChild(statusCell);
+    const title = svgEl('title', {});
+    title.textContent = `${formatDate(day)} — ${formatMoney(value)}`;
+    bar.appendChild(title);
+    chart.appendChild(bar);
 
-    return row;
+    // Подписываем каждый второй день, чтобы не было тесно.
+    if (index % 2 === 1) {
+      const label = svgEl('text', {
+        x: (8 + slot * index + slot / 2).toFixed(1),
+        y: 178,
+        'text-anchor': 'middle',
+        class: 'chart__label',
+      });
+      label.textContent = formatDate(day).slice(0, 5);
+      chart.appendChild(label);
+    }
   });
 
-  fillTable(dom.tbody, rows, 'Операций пока нет');
+  if (values.every((value) => value === 0)) {
+    const label = svgEl('text', {
+      x: width / 2, y: 80, 'text-anchor': 'middle', class: 'chart__label',
+    });
+    label.textContent = 'Пока нет оплаченных броней за период';
+    chart.appendChild(label);
+  }
+}
+
+/**
+ * Рисует компактный список последних операций.
+ * @returns {void}
+ */
+function renderRecent() {
+  const list = dom.recent;
+  list.replaceChildren();
+
+  const recent = [...bookings].sort((a, b) => b.id - a.id).slice(0, RECENT_LIMIT);
+
+  if (recent.length === 0) {
+    const empty = createEl('li', 'ops-item muted', 'Операций пока нет');
+    list.appendChild(empty);
+    return;
+  }
+
+  recent.forEach((booking, index) => {
+    const item = createEl('li', 'ops-item');
+    item.style.animationDelay = `${Math.min(index, 20) * STAGGER_MS}ms`;
+
+    const main = createEl('div', 'ops-item__main');
+    main.appendChild(createEl(
+      'div',
+      'ops-item__title',
+      `#${booking.id} · ${objectName(objectsById, booking.object_id)}`,
+    ));
+    main.appendChild(createEl(
+      'div',
+      'ops-item__sub',
+      `${formatDate(booking.date)} · ${booking.hours} ч · ${STATUS_LABELS[booking.status]}`,
+    ));
+
+    item.appendChild(main);
+    item.appendChild(createEl('div', 'ops-item__amount', formatMoney(booking.total_price)));
+
+    const receiptBtn = createEl('button', 'btn btn--ghost', 'Чек');
+    receiptBtn.type = 'button';
+    receiptBtn.disabled = booking.status !== 'paid';
+    receiptBtn.title = booking.status === 'paid'
+      ? 'Сформировать чек'
+      : 'Чек доступен только для оплаченных броней';
+    receiptBtn.addEventListener('click', () => renderReceipt(booking.id));
+    item.appendChild(receiptBtn);
+
+    list.appendChild(item);
+  });
 }
 
 /**
@@ -125,8 +256,6 @@ function renderReceipt(bookingId) {
 
 /**
  * Открывает диалог печати и печатает только блок чека.
- * Формат А4: CSS `@page { size: A4; margin: 12mm }` задаёт размер листа,
- * `data-print-hidden` скрывает всё, кроме чека (см. styles.css, день 13).
  * @returns {void}
  */
 function handlePrint() {
@@ -159,10 +288,19 @@ function handlePrint() {
  */
 async function reload() {
   try {
-    const [summary, allBookings] = await Promise.all([fetchSummary(), fetchBookings()]);
+    const [summary, allBookings, todayObjects] = await Promise.all([
+      fetchSummary(),
+      fetchBookings(),
+      fetchObjects({ date: todayIso() }),
+    ]);
     bookings = allBookings;
-    renderKpi(summary);
-    renderTable();
+
+    const busy = todayObjects.filter((object) => object.busy === true).length;
+    const occupancy = todayObjects.length > 0 ? busy / todayObjects.length : 0;
+
+    renderKpi(summary, occupancy);
+    renderChart(allBookings.filter((booking) => booking.status === 'paid'));
+    renderRecent();
   } catch (error) {
     showToast({ title: 'Не удалось загрузить дашборд', text: error.message, kind: 'error' });
   }
@@ -174,7 +312,8 @@ async function reload() {
  */
 async function init() {
   dom.kpi = document.getElementById('kpi');
-  dom.tbody = document.getElementById('directorTableBody');
+  dom.chart = document.getElementById('revenueChart');
+  dom.recent = document.getElementById('directorRecentList');
   dom.receiptBody = document.getElementById('receiptBody');
   dom.print = document.getElementById('receiptPrint');
 
